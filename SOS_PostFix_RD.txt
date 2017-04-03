@@ -1,0 +1,172 @@
+Elizabeth Brooks
+CSCI 512
+Assignment 2 Rough Draft
+22 February 2017
+
+Operational Semantics:
+Operational semantics may be used to describe the execution of a PostFix program through a step-by-step process. Program execution proceeds by the application of the following fixed set of rules on the configurations of the sequence of commands representing the PostFix abstract machine. The following progress and rewrite rules describe the transitions between states of the abstarct machine.
+
+PostFix S-Expression Grammar:
+An symbolic-expression (s-expression) is a notation for representing trees by parenthesized linear text strings.
+A sequence pattern PT∗ matches any consecutive sequence of zero or more s-expressions that matches the pattern PT.
+Syntactic Domains and Production Rules:
+P ∈ Prog ::= (postfix Nnumargs Qbody) [Program]
+Q ∈ CommandSeq ::= C∗ [CommandSequence]
+C ∈ Command ::= Nnum [IntVal]
+				| pop [Pop]
+				| swap [Swap]
+				| Aop [ArithOp]
+				| Rop [RelOp]
+				| nget [NumGet]
+				| sel [Select]
+				| exec [Execute]
+				| (Qcoms) [ExecutableSequence]
+A ∈ ArithmeticOperator = {add, sub, mul, div, rem}
+R ∈ RelationalOperator = {lt, eq, gt}
+N ∈ IntLit = {..., -2, -1, 0, 1, 2, ...}
+
+Gloassary:
+-add: Call the top stack value OpOne and the next-to-top stack value OpTwo. Pop these two values off the stack and push the result of OpTwo + OpOne onto the stack. 
+-sub: Call the top stack value OpOne and the next-to-top stack value OpTwo. Pop these two values off the stack and push the result of OpTwo − OpOne onto the stack.
+-mul: Call the top stack value OpOne and the next-to-top stack value OpTwo. Pop these two values off the stack and push the result of OpTwo * OpOne onto the stack.
+-div: Call the top stack value OpOne and the next-to-top stack value OpTwo. Pop these two values off the stack and push the result of OpTwo / OpOne onto the stack.
+-rem: Call the top stack value OpOne and the next-to-top stack value OpTwo. Pop these two values off the stack and push the result of OpTwo % OpOne onto the stack.
+-lt: Call the top stack value OpOne and the next-to-top stack value OpTwo. Pop these two values off the stack. If OpTwo < OpOne, then push a 1 (true) on the stack, otherwise push a 0 (false).
+-eq: Call the top stack value OpOne and the next-to-top stack value OpTwo. Pop these two values off the stack. If OpTwo = OpOne, then push a 1 (true) on the stack, otherwise push a 0 (false).
+-gt: Call the top stack value OpOne and the next-to-top stack value OpTwo. Pop these two values off the stack. If OpTwo > OpOne, then push a 1 (true) on the stack, otherwise push a 0 (false).
+-pop: Pop the top element off the stack and discard it. Signal an error if the stack is empty.
+-swap: Swap the top two elements of the stack. Signal an error if the stack has fewer than two values.
+-sel: Call the top three stack values OpOne, OpTwo, and OpThree. Pop these three values off the stack. If OpThree is the numeral 0, push OpOne onto the stack; if OpThree is a non-zero numeral, push OpTwo onto the stack.
+-nget: Call the top stack value vindex and the remaining stack values (from top down) OpOne, OpTwo, . . ., OpN. Pop vindex off the stack. If vindex is a numeral I, such that 1 ≤ I ≤ N, push OpI onto the stack.
+-exec: Pop the executable sequence from the top of the stack, and prepend its component commands onto the sequence of currently executing commands.
+
+Abstract Machine:
+The abstract machine provides a mathematical model for the PostFix program execution. Since the PostFix program under examination does not include a separate stack of input integer arguments, the following symbolic-expression grammar is used to produce a PostFix program prepended with a sequence of the input arguments. For example; 
+(postfix 1 4 add 5 mul 6 sub 7 div) -[3]-> [3, 4, add, 5, mul, 6, sub, 7, div]
+[3, 4, add, 5, mul, 6, sub, 7, div] [IntVal]
+[7, 5, mul, 6, sub, 7, div] [ArithOp]
+[7, 5, mul, 6, sub, 7, div] [IntVal]
+[35, 6, sub, 7, div] [ArithOp]
+[35, 6, sub, 7, div] [IntVal]
+[29, 7, div] [ArithOp]
+[29, 7, div] [IntVal]
+[4] [ArithOp]
+[4] -OF-> 4
+
+Small-Step Operational Semantics:
+Small-step operational semantics (SOS) provides a formal framework for describing program execution in terms of rewrite rules, which specify the steps necessary to transform configutions of the abstract machine.
+The following PostFix language L is strongly normalizing as there are no infintely long transition paths in the set of outcomes. Elements A ∈ AnsExp are considered to be valid answers to Legal program P ∈ Prog, given inputs I ∈ Inputs.
+Thus, an SOS for L is a five-tuple S = <CF, ⇒, FC, IF, OF>, where:
+- CF is the domain of configurations for an abstract machine for L.
+- ⇒ is the transition relation, which is a binary relation on configurations that defines the allowable transitions between 
+	configurations.
+- FC is the set of final configurations, which is a subset of IrreducibleS containing all configurations that are considered to be 
+	final states in the execution of a program.
+- IF is the input funtion, IF : (Prog × Inputs) → CF, which maps a program and its inputs to an initial configuration.
+- OF is the output function, OF : FC → AnsExp, which maps a final configuration to an appropriate answer domain.
+
+The Greek lambda symbol, λ, introduces an abstraction that specifies the graph of the function, i.e., how the function maps its argument to a result. An abstraction has the form λ formal.body where formal is a formal parameter variable that ranges over the source of the function, and body is a metalanguage expression, possibly referring to the formal parameter, that specifies a result in the target of the function. The abstraction λ formal.body is pronounced “A function that maps formal to body.” For a function with signature A → B, an abstraction defines the graph of the function to be the following subset of A × B: {<a, b> | a ∈ A and body denotes an element b ∈ B when each occurrence of formal in body is replaced by a}.
+
+The infix notations for the cons (“.”) and append (“@”) sequence functions are used to contruct compound phrases. The cons function adds an element to the start of a list, for example: a.[b, c] = [a, b, c]. The append function joins two lists, for example: [a, b, c]@[d, e] = [a, b, c, d, e]. 
+
+Domains:
+V ∈ Value = IntLit + CommandSeq
+I ∈ InputSeq = Value*
+FinalInputs = {I | (length I) ≥ 1 and (nth 1 I) = (IntLit >--> Value N) for some N ∈ IntLit}
+Inputs = IntLit*
+AnsExp = IntLit
+
+SOS:
+Suppose the PostFix SOS has the form PFSOS = <CF, ⇒, FC, IF, OF>, where:
+CF = CommandSeq
+FC = FinalInputs
+IF : (Prog x Inputs) → CF
+= λ <(postfix N Q), [N1, ..., Nn]>. //Abstraction of PostFix program and numeric inputs
+if N = n //If the number of input integers is eqaul to the input N value
+then <[(IntLit>-->Value Nn), ..., (IntLit>-->Value N1)]@Q> //then map to a configuration consisting of the body command sequence (an n-tuple) prepended (joined) with the list of numeric inputs (an n-tuple) arranged with the first numeric value next to the first command in the sequence
+else <[]Command> end //else return a stuck configuration indicating an error
+OF : FC → AnsExp //Return the integer literal at the end of the list of numeric inputs
+= λ <I'@(IntLit>-->Value N).[]Command>.(IntLit>-->AnsExp N) //Take the value at the end of the input sequence, there should be no commands remaining in the command sequence
+
+Progress Rules:
+The commands of PostFix programs are interpreted in a highly linear fashion. Even though executable sequences give the code a kind of tree structure, the contents of an executable sequence can be used only when they are prepended to the single stream of commands that is executed by the abstract machine. The fact that the next command to execute is always at the front of this command stream leads to a very simple structure for the rewrite rules below. Transitions, which appear only in rule consequents, are all of the form <@Cfirst.Q> ⇒ <I'@Q'> where Q' is either the same as Q or is the result of prepending some commands onto the front of Q. In all rules, the command Cfirst at the head of the current command sequence is consumed by the application of the rule.
+
+Rewrite Rules:
+The step-by-step transformations of the above Postfix abstract machine are described by the following rewrite rules.
+⇒ is the transition relation, which is a binary relation on configurations that defines the allowable transitions between configurations The notation cf ⇒ cf' means that there is a (one step) transition from the configuration cf to the configuration cf'. This notation, which is shorthand for <cf, cf,> ∈ ⇒, is pronounced “cf rewrites to cf prime in one step.” 
+The two parts of a transition have names: cf is called the left-hand side (LHS) and cf' is called the right-hand side (RHS). The transition relation is usually specified by rewrite rules.
+A configuration cf is reducible if there is some cf' such that cf ⇒ cf'. If there is no such cf', then we write cf ⇒ and say that cf is irreducible. An irreducible configuration (or its code component) is often called a normal form. CF can be partitioned into two sets, ReducibleS (containing all reducible configurations) and IrreducibleS (containing all irreducible ones). We omit the subscript when it is clear from context. 
+A transition relation ⇒ is deterministic if for every cf ∈ ReducibleS there is exactly one cf' such that cf ⇒ cf'. Otherwise, ⇒ is said to be nondeterministic. 
+The transition relation, ⇒, for an SOS is often specified by a set of rewrite rules. A rewrite rule has the following form:
+
+antecedents
+----------- [rule-name]
+consequent
+
+where the antecedents and the consequent contain transition patterns (described below). Informally, the rule asserts: “If the transitions specified by the antecedents are valid, then the transition specified by the consequent is valid.” The label [rule-name] on the rule is just a handy name for referring to the rule, and is not a part of the rule structure. A rewrite rule with no antecedents is an axiom; otherwise it is a progress rule. The horizontal bar is often omitted in an axiom.
+
+Note that for readability, a simpler notation is used to express the following PostFix rewrite rules. For example,
+<I@(IntLit>-->Command N).Q> ⇒ <I@(IntLit>-->Value N).Q> [num] //Strict meta language notation
+<I@N.Q> ⇒ <I@N.Q> [num] //Using the simpler notation introduced in the text Design Concepts in Programming languages
+
+Axioms:
+Since an axiom has no antecedents, it is determined solely by its consequent. As noted above, the consequent must be a transition pattern. A transition pattern looks like a transition except that the LHS and RHS may contain domain variables interspersed with the usual notation for configurations. Informally, a transition pattern is a schema that stands for all the transitions that match the
+pattern. An axiom stands for the collection of all configuration pairs that match the LHS and RHS of the transition pattern, respectively.
+
+<I@N.Q>> ⇒ <I@N.Q> [num]
+<I@(Qexec).Qrest> ⇒ <I@(Qexec).Qrest> [seq]
+<I@V.pop.Q> ⇒ <I@Q> [pop]
+<[VNsize, ..., V1]@Nindex.nget.Q> ⇒ <[VNsize, ..., V1]@VNindex.Q> [nget]
+where (compare gt Nindex 0) ∧ ¬(compare gt Nindex Nsize) ∧ (VNindex ∈ IntLit)
+<I@V2.V1.swap.Q> ⇒ <I@V1.V2.Q> [swap]
+<I@0.Vtrue.Vfalse.sel.Qrest> ⇒ <I@Vfalse.Qrest> [sel-false]
+<I@Ntest.Vtrue.Vfalse.sel.Qrest> ⇒ <I@Vtrue.Qrest> [sel-true]
+where Ntest != 0
+<I@(Qexec).exec.Qrest> ⇒ <I@Qexec@Qrest> [execute]
+<I@N2.N1.A.Q> ⇒ <I@Nans.Q> [arithop]
+where Nans = (calculate A N2 N1)
+<I@N2.N1.R.Q> ⇒ <I@1.Q> [relop-true]
+where (compare R N2 N1)
+<I@N2.N1.R.Q> ⇒ <I@0.Q> [relop-false]
+where ¬(compare R N2 N1)
+
+Operational Execution:
+Applying the developed operational semantics to the earlier PostFix example:
+(IF <(postfix 1 4 add 5 mul 6 sub 7 div), [3]>)
+= <3, 4, add, 5, mul, 6, sub, 7, div>
+=> <3, 4, add, 5, mul, 6, sub, 7, div> [num]
+=> <7, 5, mul, 6, sub, 7, div> [arithop]
+=> <7, 5, mul, 6, sub, 7, div> [num]
+=> <35, 6, sub, 7, div> [arithop]
+=> <35, 6, sub, 7, div> [num]
+=> <29, 7, div> [arithop]
+=> <29, 7, div> [num]
+=> <4> ∈ FC [arithop]
+=> (OF <4>) = 4
+
+Modified Small-Step Operation Semantics:
+Using PostFix as an example, we can use a modified answer domain AnsExp' that includes an error token, a modified final configuration set FC' that includes all irreducible configurations, and the modified OF' shown below. The outcome of a PostFix program that encounters an error will be ( AnsExp' >--> Outcome (Error >--> AnsExp' error)) rather than stuck.
+
+Modified Domains: Includes error handling
+V ∈ Value = IntLit + CommandSeq
+I ∈ InputSeq = Value*
+FinalInputs = {I | (length I) ≥ 1 and (nth 1 I) = (IntLit >--> Value N) for some N ∈ IntLit}
+Inputs = IntLit*
+Error = {error}
+AnsExp' = IntLit + Error //Modified answer domain to include error handling
+
+Modified SOS: Includes error handling
+Suppose the PostFix SOS has the form PFSOS = <CF, ⇒, FC, IF, OF>, where:
+CF = CommandSeq
+FC = FinalInputs
+IF : (Prog x Inputs) → CF
+= λ <(postfix N Q), [N1, ..., Nn]>. //PostFix program and numeric inputs
+if N = n //If the number of input integers is eqaul to the input N value
+then <[(IntLit>-->Value Nn), ..., (IntLit>-->Value N1)]@Q> //then map to a configuration consisting of the body command sequence (an n-tuple) prepended (joined) with the list of numeric inputs (an n-tuple) arranged with the first numeric value next to the first command in the sequence
+else <[]Command> end //else return a stuck configuration indicating an error
+FC' = IrreduciblePFSOS
+OF': FC' → AnsExp'
+= λ <V*@Q>.match<V*@Q>
+> <I'@(IntLit>-->Value N).[]Command>[](IntLit>-->AnsExp' N)
+> else (Error>-->AnsExp' error)
+end

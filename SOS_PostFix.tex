@@ -1,0 +1,146 @@
+% Author: Elizabeth Brooks
+% File: CSCI 512 Assignment 2
+% Date Modified: 27 February 2017
+
+% Document formatting tools
+\documentclass[a4paper,11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\linespread{1.3}
+\newcommand{\linia}{\rule{\linewidth}{0.5pt}}
+\setlength\parindent{24pt}
+\usepackage{indentfirst}
+\usepackage{mathtools}
+\usepackage{amssymb}
+
+% Title formatting tools
+\makeatletter
+\renewcommand{\maketitle}{
+\begin{center}
+\vspace{2ex}
+{\huge \textsc{\@title}}
+\vspace{1ex}
+\\
+\linia\\
+\@author \hfill \@date
+\vspace{2ex}
+\end{center}
+}
+\makeatother
+
+% Footer and header formatting tools
+\usepackage{fancyhdr,lastpage}
+\pagestyle{fancy}
+\lhead{}
+\chead{}
+\rhead{}
+\lfoot{Assignment \textnumero{} 2}
+\cfoot{}
+\rfoot{Page \thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Document content
+\begin{document}
+\title{Assignment 2 -- PostFix SOS}
+\author{Elizabeth Brooks, CSCI 512}
+\date{27 February 2017}
+\maketitle
+\section{Operational Semantics}
+\begin{par} The execution of a PostFix program can be described as a step-by-step process with operational semantics. Program execution proceeds by the application of a fixed set of rules on the configurations of an abstract machine. Axioms, rewrite rules, and progress rules determine the transitions between configurations, or states of the machine.\end{par}
+\section{S-Expresssion Grammar}
+\begin{par} Symbolic-expressions (s-expressions) may be used to represent abstract trees by parenthesized linear text strings. The following domains and rules define the syntax for the PostFix language.
+\vspace{5mm} \newline
+\textbf{Syntactic Domains and Production Rules} \newline
+P $\in$ Prog ::= (postfix $N_{numargs}$ $Q_{body}$) \hfill [Program] \newline
+Q $\in$ CommandSeq ::= C\textsuperscript{$\ast$} \hfill [CommandSequence] \newline
+C $\in$ Command ::= $N_{num}$ \hfill [IntVal]
+\begin{par} $\mid$ pop \hfill [Pop] \end{par}
+\begin{par} $\mid$ swap \hfill [Swap] \end{par}
+\begin{par} $\mid$ Aop \hfill [ArithOp] \end{par}
+\begin{par} $\mid$ Rop \hfill [RelOp] \end{par}
+\begin{par} $\mid$ nget \hfill [NumGet] \end{par}
+\begin{par} $\mid$ sel \hfill [Select] \end{par}
+\begin{par} $\mid$ exec \hfill [Execute] \end{par}
+\begin{par} $\mid$ ($Q_{coms}$) \hfill [ExecutableSequence] \end{par} \newline
+A $\in$ ArithmeticOperator = $\{$add, sub, mul, div, rem$\}$ \newline
+R $\in$ RelationalOperator = $\{$lt, eq, gt$\}$ \newline
+N $\in$ IntLit = $\{$..., -2, -1, 0, 1, 2, ...$\}$ \end{par}
+\section{Abstract Machine}
+\begin{par} An abstract machine provides a mathematical model for program execution. Since we are interested in executing PostFix programs without the use of a separate stack for the input integer values, the abstract machine is simply the given command sequence pre-pended with the n-tuple of numeric inputs. For example: \vspace{5mm} \newline
+(postfix 1 4 add 5 mul 6 sub 7 div) $\xrightarrow[]{\text{[3]}}$ [3, 4, add, 5, mul, 6, sub, 7, div] \newline
+[3, 4, add, 5, mul, 6, sub, 7, div] \hfill [IntVal] \newline
+[7, 5, mul, 6, sub, 7, div] \hfill [ArithOp] \newline
+[7, 5, mul, 6, sub, 7, div] \hfill [IntVal] \newline
+[35, 6, sub, 7, div] \hfill [ArithOp] \newline
+[35, 6, sub, 7, div] \hfill [IntVal] \newline
+[29, 7, div] \hfill [ArithOp] \newline
+[29, 7, div] \hfill [IntVal] \newline
+[4] \hfill [ArithOp] \newline
+[4] $\xrightarrow[]{\text{[OF]}}$ 4 \end{par}
+\section{Small-Step Operational Semantics}
+\begin{par} Small-step operational semantics (SOS) formally describes program execution in terms of rewrite rules, which specify the steps necessary to progress and transform configurations of the abstract machine. \end{par}
+\begin{par}The following PostFix language L is deterministic and strongly normalizing. Furthermore, elements A $\in$ AnsExp are considered to be valid answers to Legal program P $\in$ Prog, given inputs I $\in$ Inputs. \vspace{5mm} \newline
+\textbf{Domains} \newline
+V $\in$ Value = IntLit + CommandSeq \newline
+S $\in$ SeqInputs = Value\textsuperscript{$\ast$} \end{par}
+\begin{par} FinalInputs = $\{$S $\mid$ (length S) $\geq$ 1 and (nth 1 S) = (IntLit$\rightarrowtail$Value N) \end{par} \begin{par} for some N $\in$ IntLit$\}$ \end{par}
+\begin{par} Inputs = IntLit\textsuperscript{$\ast$} \end{par}
+\begin{par} AnsExp = IntLit \end{par}
+\vspace{5mm} \newline
+\textbf{SOS}
+\begin{par} Suppose the PostFix SOS is a five-tuple and has the form PFSOS = $\langle$CF, $\Rightarrow$, FC, IF, OF$\rangle$, where: \vspace{5mm} \newline
+CF = CommandSeq \newline
+FC = FinalInputs \newline
+IF : (Prog $\times$ Inputs) $\rightarrow$ CF \newline
+= $\lambda$ $\langle$(postfix N Q), [$N_1$, ..., $N_n$]$\rangle$. \end{par}
+\begin{par} if N = $\bar{n}$ \end{par}
+\begin{par} then $\langle$[(IntLit$\rightarrowtail$Value $N_n$), ..., (IntLit$\rightarrowtail$Value $N_1$)]@Q$\rangle$ \end{par}
+\begin{par} else $\langle$[]Command$\rangle$ \end{par}
+\begin{par} end \newline
+OF : FC $\rightarrow$ AnsExp \end{par}
+\begin{par} = $\lambda$ $\langle$S'@(IntLit$\rightarrowtail$Value N).[]Command$\rangle$.(IntLit$\rightarrowtail$AnsExp N) \end{par} \vspace{5mm}
+\begin{par} In the above PostFix SOS, for n $\in$ Int, $\bar{n}$ stands for the IntLit N that denotes n. CF is the domain of configurations for the abstract machine and FC is the set of final configurations, which is a subset of IrreducibleS containing all configurations that are considered to be final states in the execution of the PostFix program. The input function, IF, maps a PostFix program and its numeric inputs to an initial configuration consisting of a body command sequence joined with an n-tuple of numeric inputs pre-pended in reverse order. A stuck configuration is returned to indicate an error if an invalid command sequence or list of numeric inputs are encountered. The output function, OF, maps a final configuration to an the answer domain and returns the integer literal at the end of the list of numeric inputs. There should not be any commands remaining in the command sequence at the end of program execution. \end{par}
+\subsection{Rewrite Rules}
+\begin{par} The commands of PostFix programs are interpreted in a linear order, therefore, the contents of an executable sequence can be used only when they are pre-pended to the single stream of commands that is being executed by the PostFix abstract machine. Thus, the next command to be executed is at the front of the command stream, which leads to a simple pattern for the rewrite rules below. \end{par}
+\begin{par} Transitions, which appear only in rule consequents, are all of the form $\langle$S@$C_{first}$.Q$\rangle$ $\Rightarrow$ $\langle$S'@Q'$\rangle$ where Q' is either the same as Q or is the result of pre-pending some commands onto the front of Q. The command at the head of the current command sequence, $C_{firs}$, is consumed by the application of the given rule. \end{par}
+\begin{par} The transition relation, $\Rightarrow$, is a binary relation on configurations that defines the allowable transitions between configurations. A transition relation is deterministic if for every cf $\in$ ReducibleS there is exactly one cf' such that cf $\Rightarrow$ cf'. \end{par}
+\subsubsection{Axioms}
+\begin{par} An axiom represents the collection of all configuration pairs that respectively match the left-hand-side (LHS) and right-hand-side (RHS) of the transition pattern. Since an axiom has no antecedents, it is determined solely by its consequent, which is a transition pattern. A transition pattern is similar to a transition except that the LHS and RHS may contain domain variables. Furthermore, a transition pattern may be considered a schema representing all the transitions that match the pattern. \end{par}
+\begin{par} Note that a simpler notation is used to express the following PostFix rewrite rules, rather than the strict metalanguage notation described in the Design Concepts in Programming Languages text appendix. For example, \end{par}
+\begin{par}$\langle$S@(IntLit$\rightarrowtail$Command N).Q$\rangle$ $\Rightarrow$ $\langle$S@(IntLit$\rightarrowtail$Value N).Q$\rangle$ \hfill [num] \newline
+becomes \end{par}
+\begin{par}$\langle$S@N.Q$\rangle$ $\Rightarrow$ $\langle$S@N.Q$\rangle$ \hfill [num] \newline
+for improved readability. \vspace{5mm} \newline
+\textbf{SOS Rules} \newline
+$\langle$S@N.Q$\rangle$ $\Rightarrow$ $\langle$S@N.Q$\rangle$ \hfill [num] \newline
+$\langle$S($Q_{exec}$).$Q_{rest}$$\rangle$ $\Rightarrow$ $\langle$S@($Q_{exec}$).$Q_{rest}$$\rangle$ \hfill [seq] \newline
+$\langle$S@V.pop.Q$\rangle$ $\Rightarrow$ $\langle$S@Q$\rangle$ \hfill [pop] \newline
+$\langle$[$V_{N_{size}}$, ..., $V_1$]@$N_{index}$.nget.Q$\rangle$ $\Rightarrow$ $\langle$[$V_{N_{size}}$, ..., $V_1$]@$V_{N_{index}}$.Q$\rangle$ \hfill [nget] \end{par}
+\begin{par} where (compare gt $N_{index}$ 0) $\wedge$$\neg$(compare gt $N_{index}$ $N_{size}$) \end{par} \begin{par} $\wedge$ ($V_{N_{index}}$ $\in$ IntLit) \newline
+$\langle$S@$V_2$.$V_1$.swap.Q$\rangle$ $\Rightarrow$ $\langle$S@$V_1$.$V_2$.Q$\rangle$ \hfill [swap] \newline
+$\langle$S@0.$V_{true}$.$V_{false}$.sel.$Q_{rest}$$\rangle$ $\Rightarrow$ $\langle$S@$V_{false}$.$Q_{rest}$$\rangle$ \hfill [sel-false] \newline
+$\langle$S@$N_{test}$.$V_{true}$.$V_{false}$.sel.$Q_{rest}$ $\rangle$ $\Rightarrow$ $\langle$S@$V_{true}$.$Q_{rest}$$\rangle$ \hfill [sel-true] \end{par}
+\begin{par} where $N_{test}$ $\neq$ 0 \newline
+$\langle$S@($Q_{exec}$).exec.$Q_{rest}$$\rangle$ $\Rightarrow$ $\langle$S@$Q_{exec}$@$Q_{rest}$$\rangle$ \hfill [execute] \newline
+$\langle$S@$N_2$.$N_1$.A.Q$\rangle$ $\Rightarrow$ $\langle$S@$N_{ans}$.Q$\rangle$ \hfill [arithop] \end{par}
+\begin{par} where $N_{ans}$ = (calculate A $N_2$ $N_1$) \newline
+$\langle$S@$N_2$.$N_1$.R.Q$\rangle$ $\Rightarrow$ $\langle$S@1.Q$\rangle$ \hfill [relop-true] \end{par}
+\begin{par} where (compare R $N_2$ $N_1$) \newline
+$\langle$S@$N_2$.$N_1$.R.Q$\rangle$ $\Rightarrow$ $\langle$S@0.Q$\rangle$ \hfill [relop-false] \end{par}
+\begin{par} where $\neg$(compare R $N_2$ $N_1$) \end{par}
+\subsection{Operational Execution}
+\begin{par} By applying the developed operational semantics to the earlier PostFix example, the integer representation of the answer is returned by the output function, OF. The transition path taken from the initial to the final configuration is shown below. \vspace{5mm} \newline
+(IF $\langle$(postfix 1 4 add 5 mul 6 sub 7 div), [3]$\rangle$) \newline
+= $\langle$3, 4, add, 5, mul, 6, sub, 7, div$\rangle$ \newline
+$\Rightarrow$ $\langle$3, 4, add, 5, mul, 6, sub, 7, div$\rangle$ \hfill [num] \newline
+$\Rightarrow$ $\langle$7, 5, mul, 6, sub, 7, div$\rangle$ \hfill [arithop] \newline
+$\Rightarrow$ $\langle$7, 5, mul, 6, sub, 7, div$\rangle$ \hfill [num] \newline
+$\Rightarrow$ $\langle$35, 6, sub, 7, div$\rangle$ \hfill [arithop] \newline
+$\Rightarrow$ $\langle$35, 6, sub, 7, div$\rangle$ \hfill [num] \newline
+$\Rightarrow$ $\langle$29, 7, div$\rangle$ \hfill [arithop] \newline
+$\Rightarrow$ $\langle$29, 7, div$\rangle$ \hfill [num] \newline
+$\Rightarrow$ $\langle$4$\rangle$ $\in$ FC \hfill [arithop] \newline
+$\Rightarrow$ (OF $\langle$4$\rangle$) = 4 \vspace{5mm} \newline
+Thus, eight transitions were made using the developed PostFix SOS to reach the final configuration and return the integer value at the end of the input sequence. \end{par}
+\end{document}
